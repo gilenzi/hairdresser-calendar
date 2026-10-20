@@ -25,7 +25,6 @@ export default function Booking({
   loading,
   loadError,
   onCreate,
-  onCancel,
 }) {
   const style = styles.find((item) => item.id === styleId) ?? null
   const today = todayISO()
@@ -40,7 +39,6 @@ export default function Booking({
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [done, setDone] = useState(null)
-  const [cancelId, setCancelId] = useState(null)
   const [busy, setBusy] = useState(false)
 
   const maxMonth = useMemo(() => {
@@ -52,9 +50,6 @@ export default function Booking({
   const slots = style && date ? slotsFor(date, style.minutes, bookings) : []
   const visibleSlots = slots.filter((slot) => slot.reason !== 'past')
   const activeTime = visibleSlots.some((slot) => slot.time === time && slot.free) ? time : ''
-  const upcoming = bookings
-    .filter((booking) => `${booking.date}T${booking.time}` >= `${today}T00:00`)
-    .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`))
 
   const atCurrentMonth =
     cursor.getFullYear() === new Date().getFullYear() &&
@@ -293,9 +288,9 @@ export default function Booking({
                   placeholder="marko@email.com"
                 />
               </label>
-              {error && (
+              {(loadError || error) && (
                 <p className="form-error" role="alert">
-                  {error}
+                  {loadError || error}
                 </p>
               )}
               <button type="submit" className="button button-solid button-wide" disabled={busy || loading}>
@@ -305,62 +300,6 @@ export default function Booking({
             </form>
           )}
         </div>
-      </div>
-
-      <div className="agenda">
-        <div>
-          <h3>Zakazani termini</h3>
-          <p>Lista dolazi iz baze. Zauzet sat važi za sve koji otvore sajt.</p>
-        </div>
-        {loadError ? (
-          <p className="form-error" role="alert">{loadError}</p>
-        ) : loading ? (
-          <p className="hint">Učitavam termine...</p>
-        ) : upcoming.length === 0 ? (
-          <p className="hint">Još nema zakazanih termina.</p>
-        ) : (
-          <ul>
-            {upcoming.map((booking) => (
-              <li key={booking.id}>
-                <div>
-                  <strong>
-                    {formatLong(booking.date)} · {booking.time}
-                  </strong>
-                  <span>
-                    {booking.styleName} · {booking.name} · {booking.phone}
-                  </span>
-                </div>
-                {cancelId === booking.id ? (
-                  <div className="cancel-actions">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setBusy(true)
-                        try {
-                          await onCancel(booking.id)
-                          setCancelId(null)
-                        } catch (err) {
-                          setError(err.message || 'Termin nije otkazan.')
-                        } finally {
-                          setBusy(false)
-                        }
-                      }}
-                    >
-                      Potvrdi
-                    </button>
-                    <button type="button" className="quiet" onClick={() => setCancelId(null)}>
-                      Nazad
-                    </button>
-                  </div>
-                ) : (
-                  <button type="button" onClick={() => setCancelId(booking.id)}>
-                    Otkaži
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
     </section>
   )

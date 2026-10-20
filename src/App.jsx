@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createBookingRecord, fetchBookings, removeBooking } from './api'
+import { createBookingRecord, fetchBookings } from './api'
 import Admin from './components/Admin'
 import Barber from './components/Barber'
 import Booking from './components/Booking'
@@ -63,11 +63,6 @@ export default function App() {
     return saved
   }
 
-  async function cancelBooking(id) {
-    await removeBooking(id)
-    setBookings((current) => current.filter((booking) => booking.id !== id))
-  }
-
   if (isAdmin) return <Admin />
 
   return (
@@ -87,7 +82,6 @@ export default function App() {
           loading={loading}
           loadError={loadError}
           onCreate={addBooking}
-          onCancel={cancelBooking}
         />
         <Barber />
       </main>
