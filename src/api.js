@@ -71,7 +71,7 @@ export async function createBookingRecord(booking) {
 
 export async function fetchAllBookings() {
   const response = await fetch(
-    `${root()}/rest/v1/bookings?select=${ADMIN_COLUMNS}&order=booking_date.asc,time.asc`,
+    `${root()}/rest/v1/bookings?select=${ADMIN_COLUMNS}&order=created_at.desc`,
     { headers: headers() },
   )
   if (!response.ok) throw new Error(await readError(response))

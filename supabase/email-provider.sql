@@ -1,5 +1,5 @@
 -- Sends the customer confirmation and a notice to the barber.
--- The Brevo API key lives in Supabase Vault under the name brevo_api_key.
+-- The Resend API key lives in Supabase Vault under the name resend_api_key.
 
 create or replace function public.email_new_booking()
 returns trigger
@@ -19,7 +19,7 @@ begin
 
   select decrypted_secret into api_key
   from vault.decrypted_secrets
-  where name = 'brevo_api_key'
+  where name = 'resend_api_key'
   limit 1;
 
   if api_key is null or btrim(api_key) = '' then
@@ -43,35 +43,33 @@ begin
 
   if new.client_email is distinct from 'jasamtajogy@gmail.com' then
     perform net.http_post(
-      url := 'https://api.brevo.com/v3/smtp/email',
+      url := 'https://api.resend.com/emails',
       body := jsonb_build_object(
-        'sender', jsonb_build_object('name', 'REZ', 'email', 'jasamtajogy@gmail.com'),
-        'to', jsonb_build_array(jsonb_build_object('email', new.client_email, 'name', new.client_name)),
+        'from', 'REZ <onboarding@resend.dev>',
+        'to', jsonb_build_array(new.client_email),
         'subject', 'Termin je zakazan — ' || when_label,
-        'textContent', customer_text
+        'text', customer_text
       ),
       headers := jsonb_build_object(
-        'accept', 'application/json',
-        'content-type', 'application/json',
-        'api-key', api_key
+        'Authorization', 'Bearer ' || api_key,
+        'Content-Type', 'application/json'
       ),
       timeout_milliseconds := 8000
     );
   end if;
 
   perform net.http_post(
-    url := 'https://api.brevo.com/v3/smtp/email',
+    url := 'https://api.resend.com/emails',
     body := jsonb_build_object(
-      'sender', jsonb_build_object('name', 'REZ', 'email', 'jasamtajogy@gmail.com'),
-      'to', jsonb_build_array(jsonb_build_object('email', 'jasamtajogy@gmail.com', 'name', 'REZ')),
-      'replyTo', jsonb_build_object('email', new.client_email, 'name', new.client_name),
+      'from', 'REZ <onboarding@resend.dev>',
+      'to', jsonb_build_array('jasamtajogy@gmail.com'),
+      'reply_to', new.client_email,
       'subject', 'Nova rezervacija — ' || when_label,
-      'textContent', barber_text
+      'text', barber_text
     ),
     headers := jsonb_build_object(
-      'accept', 'application/json',
-      'content-type', 'application/json',
-      'api-key', api_key
+      'Authorization', 'Bearer ' || api_key,
+      'Content-Type', 'application/json'
     ),
     timeout_milliseconds := 8000
   );
