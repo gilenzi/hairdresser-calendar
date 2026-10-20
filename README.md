@@ -1,16 +1,24 @@
-# React + Vite
+# REZ — zakazivanje muškog šišanja
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sajt berbernice sa jednim frizerom. Klijent bira jednu od četiri muške frizure, dan u kalendaru i slobodan sat.
 
-Currently, two official plugins are available:
+## Pokretanje
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+Produkcijski build:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm run build
+```
 
-## Expanding the ESLint configuration
+Folder `dist` je statički sajt. Putanje su relativne, pa radi i na GitHub Pages projektu `https://gilenzi.github.io/hairdresser-calendar/`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## GitHub Pages
+
+Workflow `.github/workflows/pages.yml` objavljuje `dist` na svaki push u `master`. U podešavanjima repozitorijuma uključi **Pages → Build and deployment → Source: GitHub Actions**.
+
+Termini se čuvaju u Supabase tabeli `bookings`. Zauzet sat važi za sve koji otvore sajt. Lozinka baze ostaje u lokalnom `.env` i ne ide u git.
